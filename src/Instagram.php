@@ -77,6 +77,19 @@ class Instagram
     }
     
     /**
+     * Constructor with one parameter.
+     * This constructor should be used only after receiving access token.
+     *  Client secret is used to generate sig parameter when requesting to
+     *  the endpoint.
+     *
+     * @param string @clientSecret  Client secret
+     */
+    public function __construct1($clientSecret)
+    {
+        $this->clientSecret = $clientSecret;
+    }
+    
+    /**
      * Constructor with two parameters.
      * This constructor should be used when directing user to
      *  authorization URL.
