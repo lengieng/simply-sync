@@ -33,13 +33,15 @@ class ActEssential
      *
      * @param string $apiKey    API key
      * @param string $devKey    Developer key
+     * @param string $secure    Secure connection if set to true
      *
      * @return void
      */
-    public function __construct($apiKey, $devKey)
+    public function __construct($apiKey, $devKey, $secure = true)
     {
         $this->apiKey = $apiKey;
         $this->devKey = $devKey;
+        $this->secure = $secure;
     }
 
     /**
@@ -107,6 +109,16 @@ class ActEssential
     }
 
     /**
+     * Set secure connection.
+     *
+     * @return void.
+     */
+    public function setSecureConnection($secure)
+    {
+        $this->secure = $secure;
+    }
+
+    /**
      * Check if secure connection is required.
      *
      * @return boolean  true if secure is set.
@@ -162,6 +174,7 @@ class ActEssential
         list($protocol, $code, $status) = explode(' ', $statusLine, 3);
 
         $data = array(
+            'protocol' => $protocol,
             'code'     => intval($code),
             'status'   => $status,
             'response' => strlen(trim($contentBody)) > 0 ? json_decode(self::decodeChunks($contentBody), true) : false,
@@ -181,11 +194,12 @@ class ActEssential
      */
     public function request($url, $method = 'GET', $params = array())
     {
-        $authStr = 'Basic ' . base64_encode("{$this->apiKey}:{$this->devKey}");
-
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HEADER, true);
+        // Alternatively, include the following in the headers:
+        //  Authorization: Basic base64_encode("{$this->apiKey}:{$this->devKey}")
+        curl_setopt($ch, CURLOPT_USERPWD, "{$this->apiKey}:{$this->devKey}");
 
         if ($this->isSecureConnection()) {
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
@@ -198,7 +212,6 @@ class ActEssential
                 $headers = array(
                     "Connection: close",
                     "Accept: application/json",
-                    "Authorization: $authStr",
                 );
                 curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
@@ -209,7 +222,6 @@ class ActEssential
             case 'POST':
                 $headers = array(
                     "Connection: close",
-                    "Authorization: $authStr",
                 );
                 curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
