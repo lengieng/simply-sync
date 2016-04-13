@@ -115,7 +115,7 @@ class ActEssential
     {
         return $this->secure;
     }
-    
+
     /**
      * Decode a chunked API response (responses with Transfer-Encoding: chunked).
      *
@@ -201,7 +201,7 @@ class ActEssential
                     "Authorization: $authStr",
                 );
                 curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-                
+
                 if (count($params) > 0) {
                     $url .= '?' . http_build_query($params);
                 }
@@ -212,14 +212,14 @@ class ActEssential
                     "Authorization: $authStr",
                 );
                 curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-                
+
                 curl_setopt($ch, CURLOPT_POST, true);
                 if (count($params) > 0) {
                     curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
                 }
                 break;
         }
-        
+
         curl_setopt($ch, CURLOPT_URL, $url);
 
         $response = curl_exec($ch);
@@ -230,11 +230,11 @@ class ActEssential
             throw new \Exception(__FUNCTION__ . ': Curl error.' . $error);
         } elseif ($data['code'] >= 400) {
             curl_close($ch);
-            throw new \Exception(__FUNCTION__ . ': ' . $data->status);
+            throw new \Exception(__FUNCTION__ . ': ' . $data['status']);
         }
-        
+
         curl_close($ch);
-        
+
         return $data['response'];
     }
 
