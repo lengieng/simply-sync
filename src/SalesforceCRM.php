@@ -9,55 +9,55 @@ class SalesforceCRM
      * @var string
      */
     private $authURL = 'https://login.salesforce.com/services/oauth2/authorize';
-    
+
     /**
      * Access Token URL
      * @var string
      */
     private $accessTokenURL = 'https://login.salesforce.com/services/oauth2/token';
-    
+
     /**
      * Endpoint URL
      * @var string
      */
     private $endpointURL = '/services/data/v36.0';
-    
+
     /**
      * OAuth Access Token
      * @var string
      */
     private $accessToken;
-    
+
     /**
      * Instance URL
      * @var string
      */
     private $instanceURL;
-    
+
     /**
      * Client ID
      * @var string
      */
     private $clientId;
-    
+
     /**
      * Client Secret
      * @var string
      */
     private $clientSecret;
-    
+
     /**
      * Redirect URI
      * @var string
      */
     private $redirectURI;
-    
+
     /**
      * Code received from Salesforce after user authorizes our application.
      * @var string
      */
     private $code;
-    
+
     public function __construct()
     {
         $arg = func_get_args();
@@ -66,7 +66,7 @@ class SalesforceCRM
             call_user_func_array(array($this, $func), $arg);
         }
     }
-    
+
     /**
      * Constructor with two parameters.
      * This constructor should be used when directing user to
@@ -80,7 +80,7 @@ class SalesforceCRM
         $this->clientId = $clientId;
         $this->redirectURI = $redirectURI;
     }
-    
+
     /**
      * Constructor with three parameters.
      * This constructor must be used when attempting to get
@@ -96,7 +96,7 @@ class SalesforceCRM
         $this->clientSecret = $clientSecret;
         $this->redirectURI = $redirectURI;
     }
-    
+
     /**
      * Get authorization URL.
      *
@@ -106,7 +106,7 @@ class SalesforceCRM
     {
         return $this->authURL;
     }
-    
+
     /**
      * Set authorization URL.
      *
@@ -118,7 +118,7 @@ class SalesforceCRM
     {
         $this->authURL = $authURL;
     }
-    
+
     /**
      * Get instance URL.
      *
@@ -128,7 +128,7 @@ class SalesforceCRM
     {
         return $this->instanceURL;
     }
-    
+
     /**
      * Set instance URL.
      *
@@ -140,7 +140,7 @@ class SalesforceCRM
     {
         $this->instanceURL = $instanceURL;
     }
-    
+
     /**
      * Get OAuth Access Token URL.
      *
@@ -150,7 +150,7 @@ class SalesforceCRM
     {
         return $this->accessTokenURL;
     }
-    
+
     /**
      * Set OAuth Access Token URL.
      *
@@ -162,7 +162,7 @@ class SalesforceCRM
     {
         $this->accessTokenURL = $accessTokenURL;
     }
-    
+
     /**
      * Get endpoint URL.
      *
@@ -172,7 +172,7 @@ class SalesforceCRM
     {
         return $this->endpointURL;
     }
-    
+
     /**
      * Set endpoint URL.
      *
@@ -184,7 +184,7 @@ class SalesforceCRM
     {
         $this->endpointURL = $endpointURL;
     }
-    
+
     /**
      * Get access token.
      *
@@ -194,7 +194,7 @@ class SalesforceCRM
     {
         return $this->accessToken;
     }
-    
+
     /**
      * Set OAuth access token.
      *
@@ -206,7 +206,7 @@ class SalesforceCRM
     {
         $this->accessToken = $accessToken;
     }
-    
+
     /**
      * Get client ID.
      *
@@ -216,7 +216,7 @@ class SalesforceCRM
     {
         return $this->clientId;
     }
-    
+
     /**
      * Set client ID.
      *
@@ -228,7 +228,7 @@ class SalesforceCRM
     {
         $this->clientId = $clientId;
     }
-    
+
     /**
      * Get client secret.
      *
@@ -238,7 +238,7 @@ class SalesforceCRM
     {
         return $this->clientSecret;
     }
-    
+
     /**
      * Set client secret.
      *
@@ -250,7 +250,7 @@ class SalesforceCRM
     {
         $this->clientSecret = $clientSecret;
     }
-    
+
     /**
      * Get redirect URI.
      *
@@ -260,7 +260,7 @@ class SalesforceCRM
     {
         return $this->redirectURI;
     }
-    
+
     /**
      * Set redirect URI.
      *
@@ -272,7 +272,7 @@ class SalesforceCRM
     {
         $this->redirectURI = $redirectURI;
     }
-    
+
     /**
      * Get code.
      *
@@ -282,7 +282,7 @@ class SalesforceCRM
     {
         return $this->code;
     }
-    
+
     /**
      * Set code.
      *
@@ -294,7 +294,7 @@ class SalesforceCRM
     {
         $this->code = $code;
     }
-    
+
     /**
      * Perform http 'GET' or 'POST' request.
      *
@@ -315,26 +315,26 @@ class SalesforceCRM
         if (is_array($header) && count($header) > 0) {
             curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
         }
-        
+
         if ($method === 'POST') {
             if (is_array($params) && count($params)) {
                 curl_setopt($ch, CURLOPT_POST, true);
                 curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
             }
         }
-        
+
         $response = curl_exec($ch);
         if ($response === false) {
             $error = curl_error($ch);
             curl_close($ch);
             throw new \Exception(__FUNCTION__ . ': Curl error. ' . $error);
         }
-        
+
         curl_close($ch);
-        
+
         return json_decode($response);
     }
-    
+
     /**
      * Perform endpoint request.
      *
@@ -348,13 +348,13 @@ class SalesforceCRM
     {
         $url = $this->instanceURL . '/' . ltrim($this->endpointURL, '/');
         $url .= '/' . ltrim($endpoint, '/') . '?' . http_build_query($params);
-        
+
         // Using refresh access token
         $header = array("Authorization: OAuth $this->accessToken");
-        
+
         return $this->request($url, 'GET', $header, null);
     }
-    
+
     /**
      * Generate authorization URL.
      * Authorization URL is used to present the user with a login screen and
@@ -373,7 +373,7 @@ class SalesforceCRM
 
         return $url;
     }
-    
+
     /**
      * Get OAuth access token from Salesforce.
      * OAuth access token is used to perform request to endpoint.
@@ -391,7 +391,7 @@ class SalesforceCRM
             'client_secret' => $this->clientSecret,
             'redirect_uri' => $this->redirectURI
         );
-        
+
         $data = $this->request($this->accessTokenURL, 'POST', null, $params);
         if (property_exists($data, 'access_token')) {
             $this->setAccessToken($data->access_token);
@@ -413,7 +413,7 @@ class SalesforceCRM
             throw new \Exception($errorMsg);
         }
     }
-    
+
     /**
      * Retrieve all contacts
      *
@@ -421,7 +421,7 @@ class SalesforceCRM
      *
      * @return object[] All contact records
      */
-    public function retrieveContacts($fields)
+    public function getContacts($fields)
     {
         if (is_array($fields) && count($fields) > 0) {
             $query = 'SELECT ' . implode(",", $fields) . ' from Contact';
@@ -431,10 +431,10 @@ class SalesforceCRM
             if (property_exists($data, 'records')) {
                 return $data->records;
             }
-            
+
             throw new \Exception(__FUNCTION__ . ": Records not found.");
         }
-        
+
         throw new \Exception(__FUNCTION__ . ": invalid field name. " .
                              "Fields must be an array.");
     }
