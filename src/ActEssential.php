@@ -33,13 +33,15 @@ class ActEssential
      *
      * @param string $apiKey    API key
      * @param string $devKey    Developer key
+     * @param string $secure    Secure connection if set to true
      *
      * @return void
      */
-    public function __construct($apiKey, $devKey)
+    public function __construct($apiKey, $devKey, $secure = true)
     {
         $this->apiKey = $apiKey;
         $this->devKey = $devKey;
+        $this->secure = $secure;
     }
 
     /**
@@ -104,6 +106,16 @@ class ActEssential
     public function setDevKey($devKey)
     {
         $this->devKey = $devKey;
+    }
+
+    /**
+     * Set secure connection.
+     *
+     * @return void.
+     */
+    public function setSecureConnection($secure)
+    {
+        $this->secure = $secure;
     }
 
     /**
