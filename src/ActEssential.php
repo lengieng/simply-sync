@@ -174,6 +174,7 @@ class ActEssential
         list($protocol, $code, $status) = explode(' ', $statusLine, 3);
 
         $data = array(
+            'protocol' => $protocol,
             'code'     => intval($code),
             'status'   => $status,
             'response' => strlen(trim($contentBody)) > 0 ? json_decode(self::decodeChunks($contentBody), true) : false,
