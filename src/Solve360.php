@@ -9,32 +9,39 @@ class Solve360
      * @var string
      */
     public $endpointURL = 'https://secure.solve360.com';
-    
+
     /**
      * User email
      * @var string
      */
     private $email;
-    
+
     /**
      * User API Token
      * @var string
      */
     private $token;
-    
+
     /**
      * Secure
      * @var boolean
      */
     private $secure;
-    
+
+    /**
+     * Constructor
+     *
+     * @param string $email     Email address.
+     * @param string $token     API token.
+     * @param string $secure    Secure connection if set to true.
+     */
     public function __construct($email, $token, $secure = true)
     {
         $this->email = $email;
         $this->token = $token;
         $this->secure = $secure;
     }
-    
+
     /**
      * Get user email.
      *
@@ -44,7 +51,7 @@ class Solve360
     {
         return $this->email;
     }
-    
+
     /**
      * Set user email used for login.
      *
@@ -56,7 +63,7 @@ class Solve360
     {
         $this->email = $email;
     }
-    
+
     /**
      * Get user API token.
      *
@@ -66,7 +73,7 @@ class Solve360
     {
         return $this->token;
     }
-    
+
     /**
      * Set user API token.
      *
@@ -78,17 +85,27 @@ class Solve360
     {
         $this->token = $token;
     }
-    
+
+    /**
+     * Set secure connection.
+     *
+     * @return void.
+     */
+    public function setSecureConnection($secure)
+    {
+        $this->secure = $secure;
+    }
+
     /**
      * Check if secure connection is required.
      *
-     * @return boolean  true if secure is set
+     * @return boolean  true if secure is set.
      */
     public function isSecureConnection()
     {
         return $this->secure;
     }
-    
+
     /**
      * Perform http 'GET' or 'POST' request.
      *
@@ -97,7 +114,7 @@ class Solve360
      * @param string[] $header  HTTP header
      * @param string[] $params  The key/value pairs of the request parameters
      *
-     * @return object Decoded JSON object
+     * @return object Decoded JSON object.
      */
     public function request($url, $method = 'GET', $header = array(), $params = null)
     {
@@ -106,54 +123,56 @@ class Solve360
         curl_setopt($ch, CURLOPT_HEADER, false);
         if ($this->isSecureConnection()) {
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        } else {
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         }
         if (is_array($header) && count($header) > 0) {
             curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
         }
-        
+
         if ($method === 'POST') {
             if (is_array($params) && count($params)) {
                 curl_setopt($ch, CURLOPT_POST, true);
                 curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
             }
         }
-        
+
         $response = curl_exec($ch);
         if ($response === false) {
             $error = curl_error($ch);
             curl_close($ch);
             throw new \Exception(__FUNCTION__ . ': Curl error. ' . $error);
         }
-        
+
         curl_close($ch);
-        
+
         return json_decode($response);
     }
-    
+
     /**
      * Perform endpoint request.
      *
-     * @param string    $endpoint    Endpoint URL
+     * @param string    $endpoint    Endpoint URL.
      *
-     * @return object Decoded JSON object
+     * @return object Decoded JSON object.
      */
     public function get($endpoint)
     {
         $url = $this->endpointURL . '/' . ltrim($endpoint, '/');
-        
+
         $credential = $this->email . ":" . $this->token;
-        
+
         // By default, Solve360 returns XML. We want JSON here.
         $header = array(
             "Authorization: Basic " . base64_encode($credential),
             "Accept: application/json"
         );
-        
+
         return $this->request($url, 'GET', $header, null);
     }
-    
+
     /**
-     * Retrieve a contact
+     * Retrieve a contact.
      *
      * @param id    Contact id.
      *
@@ -162,12 +181,12 @@ class Solve360
      *  is the field value.
      *  On error, throw an exception.
      */
-    public function getContactById($id = null)
+    public function getContactById($id)
     {
         if (!isset($id) || empty($id)) {
             throw new \Exception(__FUNCTION__ . ': Invalid contact ID.');
         }
-        
+
         $contactInfo = $this->get("/contacts/$id");
 
         // Throw exception if $data returns 'failed' status.
@@ -186,9 +205,9 @@ class Solve360
 
         return $contact;
     }
-    
+
     /**
-     * Retrieve all contacts
+     * Retrieve all contacts.
      *
      * @return On success, return an associative array of contacts, where key
      *  is contact ID and key is the array of fields, where key is the
@@ -198,13 +217,13 @@ class Solve360
     public function getContacts()
     {
         $data = $this->get("/contacts");
-        
+
         // Throw exception if $data returns 'failed' status.
         if ($data->status == 'failed') {
             // TODO: Work out each specific error.
             throw new \Exception(__FUNCTION__ . ': Failed to retrieve all contacts.');
         }
-        
+
         // $data returns 'success' status.
         $contacts = array();
         foreach ($data as $id => $contact) {
@@ -214,7 +233,7 @@ class Solve360
                 $contacts[$id] = $contactInfo[$id];
             }
         }
-        
+
         return $contacts;
     }
 }

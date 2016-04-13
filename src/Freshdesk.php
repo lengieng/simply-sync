@@ -55,6 +55,7 @@ class Freshdesk
     {
         $this->domain = $domain;
         $this->apiKey = $apiKey;
+        $this->secure = true;
         unset($this->loginId);
         unset($this->loginPassword);
     }
@@ -72,6 +73,7 @@ class Freshdesk
         $this->domain = $domain;
         $this->loginId = $loginId;
         $this->loginPassword = $loginPassword;
+        $this->secure = true;
         unset($this->apiKey);
     }
 
@@ -149,6 +151,16 @@ class Freshdesk
     public function setLoginPassword($loginPassword)
     {
         $this->loginPassword = $loginPassword;
+    }
+
+    /**
+     * Set secure connection.
+     *
+     * @return void.
+     */
+    public function setSecureConnection($secure)
+    {
+        $this->secure = $secure;
     }
 
     /**
