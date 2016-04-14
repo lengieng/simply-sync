@@ -2,7 +2,9 @@
 
 namespace Lengieng\SimplySync;
 
-class Freshdesk
+require_once 'IRestfulConnection.php';
+
+class Freshdesk implements IRestfulConnection
 {
     /**
      * Your Freshdesk domain name
@@ -48,8 +50,8 @@ class Freshdesk
      * Constructor with two parameters.
      * This constructor is used when only API key is supplied.
      *
-     * @param string @domain    User-specific freshdesk domain name
-     * @param string @apiKey    API key
+     * @param string @domain    User-specific freshdesk domain name.
+     * @param string @apiKey    API key.
      */
     public function __construct2($domain, $apiKey)
     {
@@ -64,9 +66,9 @@ class Freshdesk
      * Constructor with three parameters.
      * This constructor is used when login Id and password are supplied.
      *
-     * @param string @domain        User-specific freshdesk domain name
-     * @param string @loginId       Login Id
-     * @param string @loginPassword Login password
+     * @param string @domain        User-specific freshdesk domain name.
+     * @param string @loginId       Login Id.
+     * @param string @loginPassword Login password.
      */
     public function __construct3($domain, $loginId, $loginPassword)
     {
@@ -243,13 +245,21 @@ class Freshdesk
      *
      * @param string $url       Request URL.
      * @param string $method    'GET' or 'POST'.
+     * @param string $headers   HTTP headers.
      * @param array  $params    An array of key/value strings.
      *
      * @return object Decoded JSON object.
      */
-    public function request($url, $method = 'GET', $params = array())
+    public function request($url, $method = 'GET', $headers = array(), $params = array())
     {
         $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HEADER, true);
+
+        if (count($headers) > 0) {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        }
 
         if ($this->useApiKey()) {
             // If API key is used, password is not needed.
@@ -259,9 +269,6 @@ class Freshdesk
             curl_setopt($ch, CURLOPT_USERPWD, "{$this->getLoginId()}:{$this->getLoginPassword()}");
         }
 
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HEADER, true);
-
         if ($this->isSecureConnection()) {
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
         } else {
@@ -270,30 +277,17 @@ class Freshdesk
 
         switch ($method) {
             case 'GET':
-                $headers = array(
-                    "Connection: close",
-                    "Accept: application/json",
-                );
-                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-
                 if (count($params) > 0) {
                     $url .= '?' . http_build_query($params);
                 }
                 break;
             case 'POST':
-                $headers = array(
-                    "Connection: close",
-                    "Content-Type: application/json",
-                );
-                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-
                 curl_setopt($ch, CURLOPT_POST, true);
                 if (count($params) > 0) {
                     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
                 }
                 break;
         }
-
         curl_setopt($ch, CURLOPT_URL, $url);
 
         $response = curl_exec($ch);
@@ -324,8 +318,32 @@ class Freshdesk
     public function get($endpoint, $params)
     {
         $url = $this->getEndpointURI() . '/' . ltrim($endpoint, '/');
+        $headers = array(
+            "Connection: close",
+            "Accept: application/json",
+        );
 
-        return $this->request($url, 'GET', $params);
+        return $this->request($url, 'GET', $headers, $params);
+    }
+
+    /**
+     * Perform endpoint post request.
+     *
+     * @param string   $endpoint    Endpoint URL.
+     * @param string[] $params      The key/value pairs of the request
+     *  parameters.
+     *
+     * @return object   Decoded JSON object.
+     */
+    public function post($endpoint, $params)
+    {
+        $url = $this->getEndpointURI() . '/' . ltrim($endpoint, '/');
+        $headers = array(
+            "Connection: close",
+            "Content-Type: application/json",
+        );
+
+        return $this->request($url, 'POST', $headers, $params);
     }
 
     /**
