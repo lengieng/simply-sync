@@ -2,7 +2,9 @@
 
 namespace Lengieng\SimplySync;
 
-class Solve360
+require_once 'IRestfulConnection.php';
+
+class Solve360 implements IRestfulConnection
 {
     /**
      * Endpoint URL
@@ -45,7 +47,7 @@ class Solve360
     /**
      * Get user email.
      *
-     * @return string   User email
+     * @return string   User email.
      */
     public function getEmail()
     {
@@ -55,7 +57,7 @@ class Solve360
     /**
      * Set user email used for login.
      *
-     * @param string $email     User email
+     * @param string $email     User email.
      *
      * @return void
      */
@@ -67,7 +69,7 @@ class Solve360
     /**
      * Get user API token.
      *
-     * @return string   User API token
+     * @return string   User API token.
      */
     public function getToken()
     {
@@ -77,9 +79,9 @@ class Solve360
     /**
      * Set user API token.
      *
-     * @param string $token  User API token
+     * @param string $token  User API token.
      *
-     * @return void
+     * @return void.
      */
     public function setToken($token)
     {
@@ -109,10 +111,10 @@ class Solve360
     /**
      * Perform http 'GET' or 'POST' request.
      *
-     * @param string   $url     Request URL
-     * @param string   $method  'GET' or 'POST'
-     * @param string[] $header  HTTP header
-     * @param string[] $params  The key/value pairs of the request parameters
+     * @param string   $url     Request URL.
+     * @param string   $method  'GET' or 'POST'.
+     * @param string[] $header  HTTP header.
+     * @param string[] $params  The key/value pairs of the request parameters.
      *
      * @return object Decoded JSON object.
      */
@@ -121,23 +123,29 @@ class Solve360
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HEADER, false);
+        // Alternatively, include the following in the headers:
+        //  Authorization: Basic base64_encode("{$this->getEmail()}:{$this->getToken()}")
+        curl_setopt($ch, CURLOPT_USERPWD, "{$this->getEmail()}:{$this->getToken()}");
+
         if ($this->isSecureConnection()) {
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
         } else {
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         }
-        if (is_array($header) && count($header) > 0) {
+
+        if (count($header) > 0) {
             curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
         }
 
         if ($method === 'POST') {
-            if (is_array($params) && count($params)) {
+            if (strlen($params)) {
                 curl_setopt($ch, CURLOPT_POST, true);
-                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
             }
         }
 
         $response = curl_exec($ch);
+        echo $response;
         if ($response === false) {
             $error = curl_error($ch);
             curl_close($ch);
@@ -150,25 +158,38 @@ class Solve360
     }
 
     /**
-     * Perform endpoint request.
+     * Perform endpoint get request.
      *
      * @param string    $endpoint    Endpoint URL.
+     * @param array     $params      The key/value pairs of the request
+     *  parameters.
      *
      * @return object Decoded JSON object.
      */
-    public function get($endpoint)
+    public function get($endpoint, $params)
     {
         $url = $this->endpointURL . '/' . ltrim($endpoint, '/');
-
-        $credential = $this->email . ":" . $this->token;
-
         // By default, Solve360 returns XML. We want JSON here.
-        $header = array(
-            "Authorization: Basic " . base64_encode($credential),
-            "Accept: application/json"
-        );
+        $header = array("Accept: application/json");
 
-        return $this->request($url, 'GET', $header, null);
+        return $this->request($url, 'GET', $header, $params);
+    }
+
+    /**
+     * Perform endpoint post request.
+     *
+     * @param string    $endpoint    Endpoint URL.
+     * @param array     $params      The key/value pairs of the request
+     *  parameters.
+     *
+     * @return object Decoded JSON object.
+     */
+    public function post($endpoint, $params)
+    {
+        $url = $this->endpointURL . '/' . ltrim($endpoint, '/');
+        $header = array("Content-Type: application/xml");
+
+        return $this->request($url, 'POST', $header, $params);
     }
 
     /**
@@ -187,7 +208,7 @@ class Solve360
             throw new \Exception(__FUNCTION__ . ': Invalid contact ID.');
         }
 
-        $contactInfo = $this->get("/contacts/$id");
+        $contactInfo = $this->get("/contacts/$id", null);
 
         // Throw exception if $data returns 'failed' status.
         if ($contactInfo->status == 'failed') {
@@ -216,7 +237,7 @@ class Solve360
      */
     public function getContacts()
     {
-        $data = $this->get("/contacts");
+        $data = $this->get("/contacts", null);
 
         // Throw exception if $data returns 'failed' status.
         if ($data->status == 'failed') {
@@ -229,7 +250,7 @@ class Solve360
         foreach ($data as $id => $contact) {
             if (is_object($contact) && property_exists($contact, "id")) {
                 $id = (string)$contact->id;
-                $contactInfo = $this->getContactById($id);
+                $contactInfo = $this->getContactById($id, null);
                 $contacts[$id] = $contactInfo[$id];
             }
         }
