@@ -31,6 +31,24 @@ class SalesforceCRM implements IRestfulConnection
     private $accessToken;
 
     /**
+     * Salesforce login username
+     * @var string
+     */
+    private $username;
+
+    /**
+     * Salesforce login password
+     * @var string
+     */
+    private $password;
+
+    /**
+     * Security Token: used in combination with password.
+     * @var string
+     */
+    private $securityToken;
+
+    /**
      * Instance URL
      * @var string
      */
@@ -80,8 +98,8 @@ class SalesforceCRM implements IRestfulConnection
      * This constructor should be used when directing user to
      *  authorization URL.
      *
-     * @param string @clientId      Client ID
-     * @param string @redirectURI   Registered redirect URI
+     * @param string $clientId      Client ID
+     * @param string $redirectURI   Registered redirect URI
      */
     public function __construct2($clientId, $redirectURI)
     {
@@ -96,15 +114,36 @@ class SalesforceCRM implements IRestfulConnection
      * This constructor must be used when attempting to get
      *  OAuth Access Token.
      *
-     * @param string @clientId      Client ID
-     * @param string @clientSecret  Client secret
-     * @param string @redirectURI   Registered redirect URI
+     * @param string $clientId      Client ID
+     * @param string $clientSecret  Client secret
+     * @param string $redirectURI   Registered redirect URI
      */
     public function __construct3($clientId, $clientSecret, $redirectURI)
     {
         $this->clientId = $clientId;
         $this->clientSecret = $clientSecret;
         $this->redirectURI = $redirectURI;
+        $this->secure = true;
+    }
+
+    /**
+     * Constructor with five parameters.
+     *  Username-Password OAuth Authentication Flow
+     *
+     * @param string    $clientId       Client Id
+     * @param string    $clientSecret   Client secret
+     * @param string    $username       Login username
+     * @param string    $password       Login password
+     * @param string    $securityToken  Security token
+     */
+    public function __construct5($clientId, $clientSecret, $username, $password, $securityToken)
+    {
+        $this->clientId = $clientId;
+        $this->clientSecret = $clientSecret;
+        $this->username = $username;
+        $this->password = $password;
+        $this->securityToken = $securityToken;
+        unset($this->redirectURI);
         $this->secure = true;
     }
 
@@ -121,7 +160,7 @@ class SalesforceCRM implements IRestfulConnection
     /**
      * Set authorization URL.
      *
-     * @param string @authURL   Authorization URL string.
+     * @param string $authURL   Authorization URL string.
      *
      * @return void.
      */
@@ -143,7 +182,7 @@ class SalesforceCRM implements IRestfulConnection
     /**
      * Set instance URL.
      *
-     * @param string @instanceURL   Instance URL string.
+     * @param string $instanceURL   Instance URL string.
      *
      * @return void.
      */
@@ -165,7 +204,7 @@ class SalesforceCRM implements IRestfulConnection
     /**
      * Set OAuth Access Token URL.
      *
-     * @param string @accessTokenURL    Access Token URL string.
+     * @param string $accessTokenURL    Access Token URL string.
      *
      * @return void.
      */
@@ -187,7 +226,7 @@ class SalesforceCRM implements IRestfulConnection
     /**
      * Set endpoint URL.
      *
-     * @param string @endpointURL   Endpoint URL string.
+     * @param string $endpointURL   Endpoint URL string.
      *
      * @return void.
      */
@@ -209,7 +248,7 @@ class SalesforceCRM implements IRestfulConnection
     /**
      * Set OAuth access token.
      *
-     * @param string @accessToken   Access token.
+     * @param string $accessToken   Access token.
      *
      * @return void.
      */
@@ -275,7 +314,7 @@ class SalesforceCRM implements IRestfulConnection
     /**
      * Set redirect URI.
      *
-     * @param string @redirectURI   Redirect URI.
+     * @param string $redirectURI   Redirect URI.
      *
      * @return void.
      */
@@ -297,13 +336,79 @@ class SalesforceCRM implements IRestfulConnection
     /**
      * Set code.
      *
-     * @param string @code  Code.
+     * @param string $code  Code.
      *
      * @return void.
      */
     public function setCode($code)
     {
         $this->code = $code;
+    }
+
+    /**
+     * Get login username.
+     *
+     * @return string   Username.
+     */
+    public function getUsername()
+    {
+        return $this->username;
+    }
+
+    /**
+     * Set username.
+     *
+     * @param string $username  Login username.
+     *
+     * @return void.
+     */
+    public function setUsername($username)
+    {
+        $this->username = $username;
+    }
+
+    /**
+     * Get login password.
+     *
+     * @return string   Password.
+     */
+    public function getPassword()
+    {
+        return $this->password;
+    }
+
+    /**
+     * Set password.
+     *
+     * @param string $password  Login password.
+     *
+     * @return void.
+     */
+    public function setPassword($password)
+    {
+        $this->password = $password;
+    }
+
+    /**
+     * Get security token.
+     *
+     * @return string   Security token.
+     */
+    public function getSecurityToken()
+    {
+        return $this->securityToken;
+    }
+
+    /**
+     * Set security token.
+     *
+     * @param string $securityToken Security token.
+     *
+     * @return void.
+     */
+    public function setSecurityToken($securityToken)
+    {
+        $this->securityToken = $securityToken;
     }
 
     /**
@@ -449,14 +554,14 @@ class SalesforceCRM implements IRestfulConnection
     }
 
     /**
-     * Get OAuth access token from Salesforce.
+     * Get OAuth access token from Salesforce using authorization code.
      * OAuth access token is used to perform request to endpoint.
      *
      * @param string $code  Code received from Salesforce after authorization.
      *
      * @return string   OAuth Token (Access Token)
      */
-    public function getOAuthToken($code)
+    public function getOAuthTokenByAuthCode($code)
     {
         $params = array(
             'code' => $code,
@@ -472,17 +577,55 @@ class SalesforceCRM implements IRestfulConnection
             if (property_exists($data, 'instance_url')) {
                 $this->setInstanceURL($data->instance_url);
             } else {
-                $errorMsg = __FUNCTION__ . ': Failed to get instance url.';
+                $errorMsg = __FUNCTION__ . ': failed to get instance url.';
                 if (property_exists($data, 'error_description')) {
-                    $errorMsg .= ' ' . $data->error_description;
+                    $errorMsg .= " {$data->error_description}";
                 }
                 throw new \Exception($errorMsg);
             }
             return $data->access_token;
         } else {
-            $errorMsg = __FUNCTION__ . ': Failed to get access token.';
+            $errorMsg = __FUNCTION__ . ': failed to get access token.';
             if (property_exists($data, 'error_description')) {
-                $errorMsg .= ' ' . $data->error_description;
+                $errorMsg .= " {$data->error_description}";
+            }
+            throw new \Exception($errorMsg);
+        }
+    }
+
+    /**
+     * Get OAuth access token from Salesforce using password.
+     * OAuth access token is used to perform request to endpoint.
+     *
+     * @return string   OAuth Token (Access Token)
+     */
+    public function getOAuthTokenByPassword()
+    {
+        $params = array(
+            'grant_type' => 'password',
+            'client_id' => $this->getClientId(),
+            'client_secret' => $this->getClientSecret(),
+            'username' => $this->getUsername(),
+            'password' => "{$this->getPassword()}{$this->getSecurityToken()}",
+        );
+
+        $data = $this->request($this->accessTokenURL, 'POST', array(), $params);
+        if (property_exists($data, 'access_token')) {
+            $this->setAccessToken($data->access_token);
+            if (property_exists($data, 'instance_url')) {
+                $this->setInstanceURL($data->instance_url);
+            } else {
+                $errorMsg = __FUNCTION__ . ': failed to get instance url.';
+                if (property_exists($data, 'error_description')) {
+                    $errorMsg .= " {$data->error_description}";
+                }
+                throw new \Exception($errorMsg);
+            }
+            return $data->access_token;
+        } else {
+            $errorMsg = __FUNCTION__ . ': failed to get access token.';
+            if (property_exists($data, 'error_description')) {
+                $errorMsg .= " {$data->error_description}";
             }
             throw new \Exception($errorMsg);
         }
