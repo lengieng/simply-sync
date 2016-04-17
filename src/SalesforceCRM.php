@@ -655,4 +655,27 @@ class SalesforceCRM implements IRestfulConnection
         throw new \Exception(__FUNCTION__ . ": invalid field name. " .
                              "Fields must be an array.");
     }
+
+    /**
+     * Add a contact.
+     *
+     * @param string[] $fields  Contact fields to be added.
+     *
+     * @return mixed    Contact id if contact is successfully added;
+     *  Otherwise, false.
+     */
+    public function addContact($fields)
+    {
+        if (is_array($fields) && count($fields) > 1) {
+            $response = $this->post('/sobjects/Contact', $fields);
+            if (property_exists($response, "success") && $response->success === true) {
+                return $response->id;
+            } else {
+                return false;
+            }
+        }
+
+        throw new \Exception(__FUNCTION__ . ": invalid fields. " .
+                            "Fields must be an array.");
+    }
 }
