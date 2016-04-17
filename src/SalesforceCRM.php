@@ -2,62 +2,70 @@
 
 namespace Lengieng\SimplySync;
 
-class SalesforceCRM
+require_once 'IRestfulConnection.php';
+
+class SalesforceCRM implements IRestfulConnection
 {
     /**
      * Authorization URL
      * @var string
      */
     private $authURL = 'https://login.salesforce.com/services/oauth2/authorize';
-    
+
     /**
      * Access Token URL
      * @var string
      */
     private $accessTokenURL = 'https://login.salesforce.com/services/oauth2/token';
-    
+
     /**
      * Endpoint URL
      * @var string
      */
     private $endpointURL = '/services/data/v36.0';
-    
+
     /**
      * OAuth Access Token
      * @var string
      */
     private $accessToken;
-    
+
     /**
      * Instance URL
      * @var string
      */
     private $instanceURL;
-    
+
     /**
      * Client ID
      * @var string
      */
     private $clientId;
-    
+
     /**
      * Client Secret
      * @var string
      */
     private $clientSecret;
-    
+
     /**
      * Redirect URI
      * @var string
      */
     private $redirectURI;
-    
+
     /**
      * Code received from Salesforce after user authorizes our application.
      * @var string
      */
     private $code;
-    
+
+    /**
+     * Secure
+     * @var boolean
+     */
+    private $secure;
+
     public function __construct()
     {
         $arg = func_get_args();
@@ -66,7 +74,7 @@ class SalesforceCRM
             call_user_func_array(array($this, $func), $arg);
         }
     }
-    
+
     /**
      * Constructor with two parameters.
      * This constructor should be used when directing user to
@@ -78,9 +86,11 @@ class SalesforceCRM
     public function __construct2($clientId, $redirectURI)
     {
         $this->clientId = $clientId;
+        unset($this->clientSecret);
         $this->redirectURI = $redirectURI;
+        $this->secure = true;
     }
-    
+
     /**
      * Constructor with three parameters.
      * This constructor must be used when attempting to get
@@ -95,266 +105,330 @@ class SalesforceCRM
         $this->clientId = $clientId;
         $this->clientSecret = $clientSecret;
         $this->redirectURI = $redirectURI;
+        $this->secure = true;
     }
-    
+
     /**
      * Get authorization URL.
      *
-     * @return string   Authorization URL
+     * @return string   Authorization URL.
      */
     public function getAuthURL()
     {
         return $this->authURL;
     }
-    
+
     /**
      * Set authorization URL.
      *
-     * @param string @authURL   Authorization URL string
+     * @param string @authURL   Authorization URL string.
      *
-     * @return void
+     * @return void.
      */
     public function setAuthURL($authURL)
     {
         $this->authURL = $authURL;
     }
-    
+
     /**
      * Get instance URL.
      *
-     * @return string   Instance URL
+     * @return string   Instance URL.
      */
     public function getInstanceURL()
     {
         return $this->instanceURL;
     }
-    
+
     /**
      * Set instance URL.
      *
-     * @param string @instanceURL   Instance URL string
+     * @param string @instanceURL   Instance URL string.
      *
-     * @return void
+     * @return void.
      */
     public function setInstanceURL($instanceURL)
     {
         $this->instanceURL = $instanceURL;
     }
-    
+
     /**
      * Get OAuth Access Token URL.
      *
-     * @return string   OAuth Access Token URL
+     * @return string   OAuth Access Token URL.
      */
     public function getAccessTokenURL()
     {
         return $this->accessTokenURL;
     }
-    
+
     /**
      * Set OAuth Access Token URL.
      *
-     * @param string @accessTokenURL    Access Token URL string
+     * @param string @accessTokenURL    Access Token URL string.
      *
-     * @return void
+     * @return void.
      */
     public function setAccessTokenURL($accessTokenURL)
     {
         $this->accessTokenURL = $accessTokenURL;
     }
-    
+
     /**
      * Get endpoint URL.
      *
-     * @return string   Endpoint URL
+     * @return string   Endpoint URL.
      */
     public function getEndpointURL()
     {
         return $this->endpointURL;
     }
-    
+
     /**
      * Set endpoint URL.
      *
-     * @param string @endpointURL   Endpoint URL string
+     * @param string @endpointURL   Endpoint URL string.
      *
-     * @return void
+     * @return void.
      */
     public function setEndpointURL($endpointURL)
     {
         $this->endpointURL = $endpointURL;
     }
-    
+
     /**
      * Get access token.
      *
-     * @return string   Access token
+     * @return string   Access token.
      */
     public function getAccessToken()
     {
         return $this->accessToken;
     }
-    
+
     /**
      * Set OAuth access token.
      *
-     * @param string @accessToken   Access token
+     * @param string @accessToken   Access token.
      *
-     * @return void
+     * @return void.
      */
     public function setAccessToken($accessToken)
     {
         $this->accessToken = $accessToken;
     }
-    
+
     /**
      * Get client ID.
      *
-     * @return string   Client ID
+     * @return string   Client ID.
      */
     public function getClientId()
     {
         return $this->clientId;
     }
-    
+
     /**
      * Set client ID.
      *
-     * @param string $clientId  Client Id
+     * @param string $clientId  Client Id.
      *
-     * @return void
+     * @return void.
      */
     public function setClientId($clientId)
     {
         $this->clientId = $clientId;
     }
-    
+
     /**
      * Get client secret.
      *
-     * @return string   Client secret
+     * @return string   Client secret.
      */
     public function getClientSecret()
     {
         return $this->clientSecret;
     }
-    
+
     /**
      * Set client secret.
      *
-     * @param string $clientSecret  Client secret
+     * @param string $clientSecret  Client secret.
      *
-     * @return void
+     * @return void.
      */
     public function setClientSecret($clientSecret)
     {
         $this->clientSecret = $clientSecret;
     }
-    
+
     /**
      * Get redirect URI.
      *
-     * @return string   Redirect URI
+     * @return string   Redirect URI.
      */
     public function getRedirectURI()
     {
         return $this->redirectURI;
     }
-    
+
     /**
      * Set redirect URI.
      *
-     * @param string @redirectURI   Redirect URI
+     * @param string @redirectURI   Redirect URI.
      *
-     * @return void
+     * @return void.
      */
     public function setRedirectURI($redirectURI)
     {
         $this->redirectURI = $redirectURI;
     }
-    
+
     /**
      * Get code.
      *
-     * @return string   Code
+     * @return string   Code.
      */
     public function getCode()
     {
         return $this->code;
     }
-    
+
     /**
      * Set code.
      *
-     * @param string @code  Code
+     * @param string @code  Code.
      *
-     * @return void
+     * @return void.
      */
     public function setCode($code)
     {
         $this->code = $code;
     }
-    
+
+    /**
+     * Set secure connection.
+     *
+     * @return void.
+     */
+    public function setSecureConnection($secure)
+    {
+        $this->secure = $secure;
+    }
+
+    /**
+     * Check if secure connection is required.
+     *
+     * @return boolean  true if secure is set.
+     */
+    public function isSecureConnection()
+    {
+        return $this->secure;
+    }
+
     /**
      * Perform http 'GET' or 'POST' request.
      *
-     * @param string   $url     Request URL
-     * @param string   $method  'GET' or 'POST'
-     * @param string[] $header  HTTP header
-     * @param string[] $params  The key/value pairs of the request parameters
+     * @param string   $url     Request URL.
+     * @param string   $method  'GET' or 'POST'.
+     * @param string[] $headers HTTP header.
+     * @param string[] $params  The key/value pairs of the request parameters.
      *
-     * @return object Decoded JSON object
+     * @return object Decoded JSON object.
      */
-    public function request($url, $method = 'GET', $header = array(), $params = null)
+    public function request($url, $method = 'GET', $headers = array(), $params = null)
     {
-        $ch = curl_init($url);
+        $ch = curl_init();
+
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HEADER, false);
-//        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-        if (is_array($header) && count($header) > 0) {
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+        if ($this->isSecureConnection()) {
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        } else {
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         }
-        
-        if ($method === 'POST') {
-            if (is_array($params) && count($params)) {
-                curl_setopt($ch, CURLOPT_POST, true);
-                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
-            }
+
+        if (count($headers) > 0) {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         }
-        
+
+        switch ($method) {
+            case 'GET':
+                if (count($params) > 0) {
+                    $url .= '?' . http_build_query($params);
+                }
+                break;
+            case 'POST':
+                if (count($params) > 0) {
+                    curl_setopt($ch, CURLOPT_POST, true);
+                    if (in_array("Content-Type: application/json", $headers)) {
+                        // This is a POST request other than requesting for
+                        // oAuth Access Token. Therefore, it is a json object.
+                        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
+                    } else {
+                        // This is a POST request for oAuth Access Token.
+                        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
+                    }
+                }
+                break;
+        }
+        curl_setopt($ch, CURLOPT_URL, $url);
+
         $response = curl_exec($ch);
         if ($response === false) {
             $error = curl_error($ch);
             curl_close($ch);
             throw new \Exception(__FUNCTION__ . ': Curl error. ' . $error);
         }
-        
+
         curl_close($ch);
-        
+
         return json_decode($response);
     }
-    
+
     /**
-     * Perform endpoint request.
+     * Perform endpoint get request.
      *
-     * @param string   $endpoint    Endpoint URL
+     * @param string   $endpoint    Endpoint URL.
      * @param string[] $params      The key/value pairs of the request
      *  parameters.
      *
-     * @return object Decoded JSON object
+     * @return object Decoded JSON object.
      */
     public function get($endpoint, $params)
     {
         $url = $this->instanceURL . '/' . ltrim($this->endpointURL, '/');
-        $url .= '/' . ltrim($endpoint, '/') . '?' . http_build_query($params);
-        
+        $url .= '/' . ltrim($endpoint, '/');
+
         // Using refresh access token
-        $header = array("Authorization: OAuth $this->accessToken");
-        
-        return $this->request($url, 'GET', $header, null);
+        $header = array("Authorization: OAuth {$this->getAccessToken()}");
+
+        return $this->request($url, 'GET', $header, $params);
     }
-    
+
+    /**
+     * Perform endpoint post request.
+     *
+     * @param string   $endpoint    Endpoint URL.
+     * @param string[] $params      The key/value pairs of the request
+     *  parameters.
+     *
+     * @return object Decoded JSON object.
+     */
+    public function post($endpoint, $params)
+    {
+        $url = $this->instanceURL . '/' . ltrim($this->endpointURL, '/');
+        $url .= '/' . ltrim($endpoint, '/');
+
+        // Using refresh access token
+        $header = array(
+            "Authorization: OAuth {$this->getAccessToken()}",
+            "Content-Type: application/json",
+        );
+
+        return $this->request($url, 'POST', $header, $params);
+    }
+
     /**
      * Generate authorization URL.
      * Authorization URL is used to present the user with a login screen and
@@ -363,7 +437,7 @@ class SalesforceCRM
      * URL Format: https://login.salesforce.com/services/oauth2/authorize?
      *  response_type=code&client_id={CLIENT-ID}&redirect_uri={REDIRECT-URI};
      *
-     * @return string   Authorization URL
+     * @return string   Authorization URL.
      */
     public function generateOAuthURL()
     {
@@ -373,12 +447,12 @@ class SalesforceCRM
 
         return $url;
     }
-    
+
     /**
      * Get OAuth access token from Salesforce.
      * OAuth access token is used to perform request to endpoint.
      *
-     * @param string $code  Code received from Salesforce after authorization
+     * @param string $code  Code received from Salesforce after authorization.
      *
      * @return string   OAuth Token (Access Token)
      */
@@ -391,8 +465,8 @@ class SalesforceCRM
             'client_secret' => $this->clientSecret,
             'redirect_uri' => $this->redirectURI
         );
-        
-        $data = $this->request($this->accessTokenURL, 'POST', null, $params);
+
+        $data = $this->request($this->accessTokenURL, 'POST', array(), $params);
         if (property_exists($data, 'access_token')) {
             $this->setAccessToken($data->access_token);
             if (property_exists($data, 'instance_url')) {
@@ -413,15 +487,15 @@ class SalesforceCRM
             throw new \Exception($errorMsg);
         }
     }
-    
+
     /**
-     * Retrieve all contacts
+     * Retrieve all contacts.
      *
-     * @param string[] $fields  Contact fields to be queried
+     * @param string[] $fields  Contact fields to be queried.
      *
-     * @return object[] All contact records
+     * @return object   JSON decoded object representing all the contacts.
      */
-    public function retrieveContacts($fields)
+    public function getContacts($fields)
     {
         if (is_array($fields) && count($fields) > 0) {
             $query = 'SELECT ' . implode(",", $fields) . ' from Contact';
@@ -431,10 +505,10 @@ class SalesforceCRM
             if (property_exists($data, 'records')) {
                 return $data->records;
             }
-            
+
             throw new \Exception(__FUNCTION__ . ": Records not found.");
         }
-        
+
         throw new \Exception(__FUNCTION__ . ": invalid field name. " .
                              "Fields must be an array.");
     }
