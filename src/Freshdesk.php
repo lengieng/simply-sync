@@ -349,11 +349,36 @@ class Freshdesk implements IRestfulConnection
     /**
      * Retrieve all contacts.
      *
+     * @param boolean   $filtered   true if the returned contact field needs
+     *  to be filtered.
+     *
      * @return object   Decoded JSON object representing an array of all
      *  contacts.
      */
-    public function getContacts()
+    public function getContacts($filtered = true)
     {
+        if ($filtered) {
+            $requiredFields = [
+                "address",
+                "email",
+                "job_title",
+                "mobile",
+                "name",
+                "phone",
+                "twitter_id",
+            ];
+            $contacts = $this->get('contacts', null);
+            for ($i = 0; $i < count($contacts); $i++) {
+                foreach ($contacts[$i] as $key => $val) {
+                    if (!in_array($key, $requiredFields)) {
+                        unset($contacts[$i][$key]);
+                    }
+                }
+            }
+
+            return $contacts;
+        }
+
         return $this->get('contacts', null);
     }
 }
