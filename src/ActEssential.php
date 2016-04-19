@@ -2,7 +2,9 @@
 
 namespace Lengieng\SimplySync;
 
-class ActEssential
+require_once 'IRestfulConnection.php';
+
+class ActEssential implements IRestfulConnection
 {
     /**
      * Endpoint URL
@@ -188,18 +190,24 @@ class ActEssential
      *
      * @param string $url       Request URL.
      * @param string $method    'GET' or 'POST'.
+     * @param string $headers   HTTP headers.
      * @param array  $params    An array of key/value strings.
      *
      * @return object Decoded JSON object.
      */
-    public function request($url, $method = 'GET', $params = array())
+    public function request($url, $method = 'GET', $headers = array(), $params = array())
     {
         $ch = curl_init();
+
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HEADER, true);
         // Alternatively, include the following in the headers:
         //  Authorization: Basic base64_encode("{$this->apiKey}:{$this->devKey}")
         curl_setopt($ch, CURLOPT_USERPWD, "{$this->apiKey}:{$this->devKey}");
+
+        if (count($headers)) {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        }
 
         if ($this->isSecureConnection()) {
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
@@ -209,29 +217,17 @@ class ActEssential
 
         switch ($method) {
             case 'GET':
-                $headers = array(
-                    "Connection: close",
-                    "Accept: application/json",
-                );
-                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-
                 if (count($params) > 0) {
                     $url .= '?' . http_build_query($params);
                 }
                 break;
             case 'POST':
-                $headers = array(
-                    "Connection: close",
-                );
-                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-
                 curl_setopt($ch, CURLOPT_POST, true);
                 if (count($params) > 0) {
                     curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
                 }
                 break;
         }
-
         curl_setopt($ch, CURLOPT_URL, $url);
 
         $response = curl_exec($ch);
@@ -251,7 +247,7 @@ class ActEssential
     }
 
     /**
-     * Perform endpoint request.
+     * Perform endpoint get request.
      *
      * @param string   $endpoint    Endpoint URL.
      * @param string[] $params      The key/value pairs of the request
@@ -262,8 +258,29 @@ class ActEssential
     public function get($endpoint, $params)
     {
         $url = $this->endpointURL . '/' . ltrim($endpoint, '/');
+        $headers = array(
+            "Connection: close",
+            "Accept: application/json",
+        );
 
-        return $this->request($url, 'GET', $params);
+        return $this->request($url, 'GET', $headers, $params);
+    }
+
+    /**
+     * Perform endpoint post request.
+     *
+     * @param string   $endpoint    Endpoint URL.
+     * @param string[] $params      The key/value pairs of the request
+     *  parameters.
+     *
+     * @return object   Decoded JSON object.
+     */
+    public function post($endpoint, $params)
+    {
+        $url = $this->endpointURL . '/' . ltrim($endpoint, '/');
+        $headers = array("Connection: close");
+
+        return $this->request($url, 'POST', $headers, $params);
     }
 
     /**
@@ -305,8 +322,7 @@ class ActEssential
     public function addContact($contact = array())
     {
         if (count($contact) > 0) {
-            $url = $this->endpointURL . '/api/contacts';
-            return $this->request($url, 'POST', $contact);
+            return $this->post('/api/contacts', $contact);
         }
 
         throw new \Exception(__FUNCTION__ . ': contact not specified.');
