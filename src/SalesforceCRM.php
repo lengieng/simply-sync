@@ -638,10 +638,21 @@ class SalesforceCRM implements IRestfulConnection
      *
      * @return object   JSON decoded object representing all the contacts.
      */
-    public function getContacts($fields)
+    public function getContacts($fields = array())
     {
         if (is_array($fields) && count($fields) > 0) {
             $query = 'SELECT ' . implode(",", $fields) . ' from Contact';
+            $params = array("q" => $query);
+            $endpoint = "/query";
+            $data = $this->get($endpoint, $params);
+            if (property_exists($data, 'records')) {
+                return $data->records;
+            }
+
+            throw new \Exception(__FUNCTION__ . ": Records not found.");
+        } else {
+            // If fields is not specified, assume the following.
+            $query = 'SELECT Name,MailingAddress,Phone,MobilePhone,Fax,Email from Contact';
             $params = array("q" => $query);
             $endpoint = "/query";
             $data = $this->get($endpoint, $params);
