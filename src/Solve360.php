@@ -145,7 +145,6 @@ class Solve360 implements IRestfulConnection
         }
 
         $response = curl_exec($ch);
-        echo $response;
         if ($response === false) {
             $error = curl_error($ch);
             curl_close($ch);
@@ -251,7 +250,8 @@ class Solve360 implements IRestfulConnection
             if (is_object($contact) && property_exists($contact, "id")) {
                 $id = (string)$contact->id;
                 $contactInfo = $this->getContactById($id, null);
-                $contacts[$id] = $contactInfo[$id];
+//                $contacts[$id] = $contactInfo[$id];
+                $contacts[] = $contactInfo[$id];
             }
         }
 
