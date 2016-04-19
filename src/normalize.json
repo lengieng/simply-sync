@@ -1,0 +1,135 @@
+[
+    {
+        "id": 1,
+        "name": "name",
+        "keyword": [
+            "name",
+            "firstname",
+            "lastname"
+        ]
+    },
+    {
+        "id": 2,
+        "name": "company",
+        "keyword": [
+            "company"
+        ]
+    },
+    {
+        "id": 4,
+        "name": "salutation",
+        "keyword": [
+            "salutation"
+        ]
+    },
+    {
+        "id": 5,
+        "name": "address1",
+        "keyword": [
+            "address",
+            "address1",
+            "line1",
+            "street",
+            "street1",
+            "businessaddress"
+        ]
+    },
+    {
+        "id": 6,
+        "name": "address2",
+        "keyword": [
+            "address2"
+        ]
+    },
+    {
+        "id": 7,
+        "name": "country",
+        "keyword": [
+            "country"
+        ]
+    },
+    {
+        "id": 8,
+        "name": "city",
+        "keyword": [
+            "city",
+            "town"
+        ]
+    },
+    {
+        "id": 9,
+        "name": "state",
+        "keyword": [
+            "state",
+            "county"
+        ]
+    },
+    {
+        "id": 10,
+        "name": "zip",
+        "keyword": [
+            "zip",
+            "postalcode",
+            "postcode"
+        ]
+    },
+    {
+        "id": 23,
+        "name": "email",
+        "keyword": [
+            "email",
+            "emailaddress",
+            "businessemail"
+        ]
+    },
+    {
+        "id": 39,
+        "name": "fax",
+        "keyword": [
+            "fax",
+            "businessfax"
+        ]
+    },
+    {
+        "id": 47,
+        "name": "phone",
+        "keyword": [
+            "phone",
+            "homephone",
+            "businessphonedirect"
+        ]
+    },
+    {
+        "id": 55,
+        "name": "mobile",
+        "keyword": [
+            "mobile",
+            "mobilephone",
+            "cellularphone"
+        ]
+    },
+    {
+        "id": 64,
+        "name": "twitter",
+        "keyword": [
+            "twitter",
+            "twitter_id"
+        ]
+    },
+    {
+        "id": 77,
+        "name": "title",
+        "keyword": [
+            "title",
+            "job_title",
+            "jobtitle"
+        ]
+    },
+    {
+        "id": 80,
+        "name": "preferred_method",
+        "keyword": [
+            "preferred_method"
+        ]
+    }
+]
