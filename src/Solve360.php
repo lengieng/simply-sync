@@ -2,7 +2,7 @@
 
 namespace Lengieng\SimplySync;
 
-require_once 'IRestfulConnection.php';
+require_once realpath(__DIR__ . '/IRestfulConnection.php');
 
 class Solve360 implements IRestfulConnection
 {
