@@ -2,7 +2,7 @@
 
 namespace Lengieng\SimplySync;
 
-require_once 'IRestfulConnection.php';
+require_once realpath(__DIR__ . '/IRestfulConnection.php');
 
 class TactileCRM implements IRestfulConnection
 {

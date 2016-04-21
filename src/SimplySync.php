@@ -2,12 +2,12 @@
 
 namespace Lengieng\SimplySync;
 
-require_once 'vendor\SimplyCast\php-wrapper\SimplyCastAPI.php';
-require_once 'ActEssential.php';
-require_once 'Freshdesk.php';
-require_once 'SalesforceCRM.php';
-require_once 'Solve360.php';
-require_once 'TactileCRM.php';
+require_once realpath(__DIR__ . '/vendor/SimplyCast/php-wrapper/SimplyCastAPI.php');
+require_once realpath(__DIR__ . '/ActEssential.php');
+require_once realpath(__DIR__ . '/Freshdesk.php');
+require_once realpath(__DIR__ . '/SalesforceCRM.php');
+require_once realpath(__DIR__ . '/Solve360.php');
+require_once realpath(__DIR__ . '/TactileCRM.php');
 
 use SimplyCast;
 
@@ -345,7 +345,7 @@ class SimplySync
      */
     public function normalize($contacts)
     {
-        $normalizeFile = __DIR__ . '\normalize.json';
+        $normalizeFile = realpath(__DIR__ . '/normalize.json');
         $newContacts = array();
         $normString = file_get_contents($normalizeFile, false);
         if ($normString === false) {
@@ -443,7 +443,7 @@ class SimplySync
      *
      * @param string $platform  Supported platform name.
      *
-     * @return array Information about the batch that was submitted.
+     * @return
      */
     public function syncFrom($platform)
     {
