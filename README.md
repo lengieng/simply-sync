@@ -21,6 +21,28 @@ This API requires the following libraries:
 4. Solve360
 5. Tactile CRM
 
+## How to use the API
+
+```php
+// Instantiate SimplySync object
+$ss = new SimplySync();
+
+// Setup SimplyCast API
+$simplyCast = $ss->setupSimplyCast(SC_PUBLICKEY, SC_SECRETKEY);
+
+// Setup CRM platform from which data to be synced
+$ae = $ss->setup(
+                    SimplySync::PLATFORM_ACTESSENTIAL,
+                    array(
+                        "apikey" => AE_APIKEY,
+                        "devkey" => AE_DEVKEY,
+                    )
+                );
+
+// Sync from the specified platform to SimplyCast's CRM
+$ss->syncFrom(SimplySync::PLATFORM_ACTESSENTIAL);
+```
+
 ## License & Authors
 
 **Author:** Lengieng Ing (ing.lengieng@gmail.com)
